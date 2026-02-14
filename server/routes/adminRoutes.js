@@ -10,6 +10,8 @@ router.get("/admin", auth, isAdmin, (req, res) => {
 })
 export default router;
 
+
+
 // {
 //   "email": "admin@admin.com",
 //   "password": "Admin@123"

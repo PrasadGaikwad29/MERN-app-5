@@ -1,11 +1,14 @@
 import { Routes, Route } from "react-router-dom";
-import Blogs from "./pages/Blogs";
+import Blogs from "./pages/Home";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreateBlog from "./pages/CreateBlog";
 import Navbar from "./components/Navbar";
 import EditBlog from "./pages/EditBlog";
 import Register from "./pages/Register";
+import MyBlogs from "./pages/MyBlogs";
+import AdminDashboard from "./pages/AdminDashboard";
+import SingleBlog from "./pages/SingleBlog";
 
 
 function App() {
@@ -16,12 +19,30 @@ function App() {
         <Route path="/" element={<Blogs />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/blogs/:id" element={<SingleBlog />} />
 
         <Route
           path="/create"
           element={
             <ProtectedRoute>
               <CreateBlog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/userdashboard/myblogs"
+          element={
+            <ProtectedRoute role="user">
+              <MyBlogs />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admindashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

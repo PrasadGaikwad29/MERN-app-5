@@ -5,7 +5,9 @@ import { useBlogs } from "../context/BlogContext";
 const CreateBlog = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [status, setStatus] = useState("draft");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const { addBlog } = useBlogs();
   const navigate = useNavigate();
@@ -13,12 +15,13 @@ const CreateBlog = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      await addBlog({ title, content });
-      navigate("/");
+      await addBlog({ title, content, status });
+      navigate("/userdashboard/myblogs");
     } catch (error) {
-      console.log("Failed to create blog", error.response?.data?.message);
+      setError(error.response?.data?.message || "Failed to create blog");
     } finally {
       setLoading(false);
     }
@@ -44,6 +47,17 @@ const CreateBlog = () => {
         onChange={(e) => setContent(e.target.value)}
         required
       />
+      <br />
+      <br />
+
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <option value="draft">Save as Draft</option>
+        <option value="review">Submit for Review</option>
+        <option value="publish">Publish the Blog</option>
+      </select>
+
+      <br />
+      <br />
 
       <button disabled={loading}>{loading ? "Creating..." : "Create"}</button>
     </form>

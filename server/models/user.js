@@ -27,12 +27,11 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
-    blogs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Blog",
-      },
-    ],
+    blogs: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Blog",
+      default: [],
+    },
   },
   { timestamps: true },
 );

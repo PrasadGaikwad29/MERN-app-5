@@ -7,6 +7,7 @@ const Register = () => {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const Register = () => {
     setError(null);
 
     try {
-      await registerUser({ name, email, password });
+      await registerUser({ name, surname, email, password });
       navigate("/login");
     } catch (error) {
       setError(error.response?.data?.message || "Registartion Failed");
@@ -39,6 +40,13 @@ const Register = () => {
         onChange={(e) => setName(e.target.value)}
         required
       />
+      <input
+        type="text"
+        placeholder="Surname"
+        value={surname}
+        onChange={(e) => setSurname(e.target.value)}
+      />
+
       <input
         type="email"
         placeholder="Email"

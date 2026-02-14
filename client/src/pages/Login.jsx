@@ -16,8 +16,13 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    await login({ email, password });
-    navigate("/");
+    const loggedInUser = await login({ email, password });
+
+    if (loggedInUser?.role === "admin") {
+      navigate("/admindashboard");
+    } else {
+      navigate("/userdashboard/myblogs");
+    }
   } catch (err) {
     setError("Invalid credentials");
   } finally {

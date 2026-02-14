@@ -37,13 +37,15 @@ const blogSchema = new mongoose.Schema(
       enum: ["draft", "review", "publish"],
       default: "draft",
     },
-    comments: [commentSchema],
-    likes: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    comments: {
+      type: [commentSchema],
+      default: [],
+    },
+    likes: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
   },
   { timestamps: true },
 );

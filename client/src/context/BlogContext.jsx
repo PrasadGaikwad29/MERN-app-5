@@ -6,6 +6,7 @@ import {
   deleteBlog,
   toggleLikeBlog,
 } from "../services/blogService";
+import api from "../services/api";
 
 const BlogContext = createContext();
 
@@ -46,10 +47,22 @@ export const BlogProvider = ({ children }) => {
       prev.map((b) => (b._id === id ? res.data.blog : b))
     );
   };
-
+const fetchSingleBlog = async (id) => {
+  const res = await api.get(`/blogs/getblogbyid/${id}`);
+  return res.data.blog;
+  };
+  
   return (
     <BlogContext.Provider
-      value={{ blogs, loading, addBlog, editBlog, removeBlog, toggleLike }}
+      value={{
+        blogs,
+        loading,
+        addBlog,
+        editBlog,
+        removeBlog,
+        toggleLike,
+        fetchSingleBlog,
+      }}
     >
       {children}
     </BlogContext.Provider>

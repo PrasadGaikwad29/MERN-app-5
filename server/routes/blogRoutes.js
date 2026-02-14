@@ -11,7 +11,7 @@ import {
   toggleLike,
 } from "../controllers/blogController.js";
 
-import { auth, isAdmin } from "../middlewares/auth.js";
+import { auth, isAdmin, optionalAuth } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ const router = express.Router();
 router.get("/getallblogs", getAllBlogs);
 
 // Read single blog (publish OR author/admin)
-router.get("/getblogbyid/:id", getBlogById);
+router.get("/getblogbyid/:id", optionalAuth, getBlogById);
 
 /* =======================
    Authenticated User

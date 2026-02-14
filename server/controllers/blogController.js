@@ -105,7 +105,7 @@ export const getBlogById = async (req, res) => {
       });
     }
 
-    // ✅ FIX 3: allow guest access ONLY for published blogs
+    // ✅ FIX 3: allow guest access ONLY for publish blogs
     if (
       blog.status !== "publish" &&
       (!req.user ||
@@ -135,9 +135,11 @@ export const getBlogById = async (req, res) => {
 /* =======================
    UPDATE BLOG
 ======================= */
+
 export const updateBlog = async (req, res) => {
   try {
     const { title, content, status } = req.body;
+
     const blog = await Blog.findById(req.params.id);
 
     if (!blog) {
@@ -147,25 +149,45 @@ export const updateBlog = async (req, res) => {
       });
     }
 
-    if (blog.author.toString() !== req.user.id && req.user.role !== "admin") {
+    // 🔐 Authorization: only author or admin
+    const isAuthor = blog.author.toString() === req.user.id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!isAuthor && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this blog",
       });
     }
 
-    // if (status === "publish" && req.user.role !== "admin") {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: "Only admin can publish",
-    //   });
-    // }
+    // ✅ Validate status if provided
+    const allowedStatuses = ["draft", "review", "publish"];
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
 
+    const previousStatus = blog.status;
+
+    // ✏️ Update fields only if provided
     blog.title = title ?? blog.title;
     blog.content = content ?? blog.content;
     blog.status = status ?? blog.status;
 
     await blog.save();
+
+    // 🔔 Notify author if ADMIN changed the status
+    if (status && previousStatus !== status && isAdmin && !isAuthor) {
+      await User.findByIdAndUpdate(blog.author, {
+        $push: {
+          notifications: {
+            message: `Admin changed your blog "${blog.title}" from ${previousStatus} to ${status}.`,
+          },
+        },
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -173,7 +195,7 @@ export const updateBlog = async (req, res) => {
       blog,
     });
   } catch (error) {
-    console.error(error); // ✅ FIX 2
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -343,5 +365,59 @@ export const getMyBlogs = async (req, res) => {
       success: false,
       message: "Internal server error",
     });
+  }
+};
+
+/* =======================
+   Change blog status by admin
+======================= */
+
+export const adminUpdateBlogStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    if (!["draft", "review", "publish"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const blog = await Blog.findById(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // 🔐 Authorization Check
+    const isAuthor = blog.author.toString() === userId.toString();
+    const isAdmin = userRole === "admin";
+
+    if (!isAdmin && !isAuthor) {
+      return res.status(403).json({
+        message: "You are not authorized to update this blog status",
+      });
+    }
+
+    const previousStatus = blog.status;
+    blog.status = status;
+    await blog.save();
+
+    // 🔔 Notify only if admin changed it
+    if (isAdmin && !isAuthor) {
+      await User.findByIdAndUpdate(blog.author, {
+        $push: {
+          notifications: {
+            message: `Admin changed your blog "${blog.title}" from ${previousStatus} to ${status}.`,
+          },
+        },
+      });
+    }
+
+    res.status(200).json({
+      message: "Status updated successfully",
+      blog,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
