@@ -73,6 +73,7 @@ export const getAllBlogsForAdmin = async (req, res) => {
   try {
     const blogs = await Blog.find()
       .populate("author", "name surname role")
+      .populate("comments.user", "name surname role")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -217,7 +218,10 @@ export const deleteBlog = async (req, res) => {
       });
     }
 
-    if (blog.author.toString() !== req.user.id && req.user.role !== "admin") {
+    const isAdmin = req.user.role === "admin";
+    const isAuthor = blog.author.toString() === req.user.id;
+
+    if (!isAdmin && !isAuthor) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
@@ -230,12 +234,24 @@ export const deleteBlog = async (req, res) => {
       $pull: { blogs: blog._id },
     });
 
+    // 🔔 Notify only if ADMIN deleted it
+if (isAdmin && !isAuthor) {
+  await User.findByIdAndUpdate(blog.author, {
+    $push: {
+      notifications: {
+        message: `Admin deleted your blog "${blog.title}".`,
+        blogId: blog._id,
+        type: "blog_deleted",
+      },
+    },
+  });
+}
     return res.status(200).json({
       success: true,
       message: "Blog deleted",
     });
   } catch (error) {
-    console.error(error); // ✅ FIX 2
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -294,7 +310,7 @@ export const toggleLike = async (req, res) => {
 ======================= */
 export const addComment = async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, parentId} = req.body;
 
     if (!text) {
       return res.status(400).json({
@@ -322,6 +338,7 @@ export const addComment = async (req, res) => {
     blog.comments.push({
       user: req.user.id,
       text,
+      parent : parentId || null,
     });
 
     await blog.save();
@@ -352,6 +369,7 @@ export const getMyBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ author: req.user.id })
       .populate("author", "name surname")
+      .populate("comments.user", "name surname")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -408,6 +426,8 @@ export const adminUpdateBlogStatus = async (req, res) => {
         $push: {
           notifications: {
             message: `Admin changed your blog "${blog.title}" from ${previousStatus} to ${status}.`,
+            blogId: blog._id,
+            type: "status_changed",
           },
         },
       });
@@ -419,5 +439,59 @@ export const adminUpdateBlogStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteCommentByAdmin = async (req, res) => {
+  try {
+    const { blogId, commentId } = req.params;
+
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    const commentToDelete = blog.comments.find(
+      (c) => c._id.toString() === commentId,
+    );
+
+    if (!commentToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found",
+      });
+    }
+
+    blog.comments = blog.comments.filter(
+      (comment) => comment._id.toString() !== commentId,
+    );
+
+    await blog.save();
+
+    // 🔔 Structured notification
+    await User.findByIdAndUpdate(blog.author, {
+      $push: {
+        notifications: {
+          message: `Admin deleted a comment on your blog "${blog.title}".`,
+          blogId: blog._id,
+          type: "comment_deleted",
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Comment deleted by admin",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };

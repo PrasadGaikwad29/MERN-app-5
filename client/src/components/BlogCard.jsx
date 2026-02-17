@@ -9,9 +9,10 @@ const BlogCard = ({ blog, showActions = true }) => {
 
   const isAuthor = user?._id === blog.author?._id;
   const isAdmin = user?.role === "admin";
-  const canModify = isAuthor || isAdmin;
+  const canModify = isAuthor || isAdmin;  
 
-  const isLiked = blog.likes?.some((id) => id.toString() === user?._id);
+  const isLiked = blog.likes?.includes(user?._id);
+
 
   return (
     <div style={{ borderBottom: "1px solid #ddd", marginBottom: 16 }}>

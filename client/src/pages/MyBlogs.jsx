@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import CommentSection from "../components/CommentSection";
 
 const MyBlogs = () => {
   const [blogs, setBlogs] = useState([]);
-  const [expanded, setExpanded] = useState({}); 
+  const [expanded, setExpanded] = useState({});
   const navigate = useNavigate();
 
   const fetchMyBlogs = async () => {
@@ -21,8 +22,12 @@ const MyBlogs = () => {
   }, []);
 
   const deleteBlog = async (id) => {
-    await api.delete(`/blogs/deleteblog/${id}`);
-    setBlogs((prev) => prev.filter((b) => b._id !== id));
+    try {
+      await api.delete(`/blogs/deleteblog/${id}`);
+      fetchMyBlogs(); // ✅ safer than manual filter
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const toggleReadMore = (id) => {
@@ -34,12 +39,8 @@ const MyBlogs = () => {
 
   return (
     <div>
-      <br />
-      <br />
       <button onClick={() => navigate("/create")}>Create New Blog</button>
-
       <h2>My Blogs</h2>
-
       {blogs.map((blog) => {
         const isExpanded = expanded[blog._id];
         const previewLength = 250;
@@ -50,30 +51,30 @@ const MyBlogs = () => {
             style={{ borderBottom: "1px solid #ccc", marginTop: 20 }}
           >
             <h3>{blog.title}</h3>
-
+            <p>
+              By {blog.author?.name} {blog.author?.surname}
+            </p>
             <p>
               {isExpanded ? blog.content : blog.content.slice(0, previewLength)}
 
               {blog.content.length > previewLength && (
                 <span
                   onClick={() => toggleReadMore(blog._id)}
-                  style={{
-                    color: "blue",
-                    cursor: "pointer",
-                    marginLeft: 8,
-                  }}
+                  style={{ color: "blue", cursor: "pointer" }}
                 >
-                  {isExpanded ? "Show Less" : "Read More"}
+                  {isExpanded ? " Show Less" : " Read More"}
                 </span>
               )}
             </p>
 
-            <p>{blog.author?.name}</p>
             <p>Status: {blog.status}</p>
 
             <button onClick={() => navigate(`/edit/${blog._id}`)}>Edit</button>
 
             <button onClick={() => deleteBlog(blog._id)}>Delete</button>
+
+            {/* Comments */}
+            <CommentSection blogId={blog._id} />
           </div>
         );
       })}
@@ -82,3 +83,4 @@ const MyBlogs = () => {
 };
 
 export default MyBlogs;
+

@@ -14,15 +14,17 @@ export const BlogProvider = ({ children }) => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchBlogs = async () => {
-    setLoading(true);
-    try {
-      const res = await getBlogs();
-      setBlogs(res.data.blogs || []);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchBlogs = async () => {
+  setLoading(true);
+  try {
+    const res = await getBlogs();
+    setBlogs(res.data.blogs || []);
+  } catch (error) {
+    console.error("Failed to fetch blogs", error);
+  } finally {
+    setLoading(false);
+  }
+};
    const addBlog = async (data) => {
     const res = await createBlog(data);
     setBlogs((prev) => [res.data.blog, ...prev]);
@@ -62,6 +64,7 @@ const fetchSingleBlog = async (id) => {
         removeBlog,
         toggleLike,
         fetchSingleBlog,
+        fetchBlogs,
       }}
     >
       {children}

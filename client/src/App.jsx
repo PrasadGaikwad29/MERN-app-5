@@ -32,12 +32,11 @@ function App() {
         <Route
           path="/userdashboard/myblogs"
           element={
-            <ProtectedRoute role="user">
+            <ProtectedRoute>
               <MyBlogs />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/admindashboard"
           element={

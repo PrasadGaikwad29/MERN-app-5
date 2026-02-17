@@ -11,6 +11,10 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    }
   },
   { timestamps: true },
 );

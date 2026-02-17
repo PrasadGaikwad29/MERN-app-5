@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { useBlogs } from "../context/BlogContext";
 import BlogCard from "../components/BlogCard";
 
 const Home = () => {
-  const { blogs, loading } = useBlogs();
+  const { blogs, loading, fetchBlogs } = useBlogs();
+
+  useEffect(() => {
+    fetchBlogs(); // <-- THIS is what you are missing
+  }, []);
 
   if (loading) return <p>Loading...</p>;
   if (!Array.isArray(blogs)) return null;

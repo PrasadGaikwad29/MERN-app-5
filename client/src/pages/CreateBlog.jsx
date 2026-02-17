@@ -60,6 +60,14 @@ const CreateBlog = () => {
       <br />
 
       <button disabled={loading}>{loading ? "Creating..." : "Create"}</button>
+
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        style={{ marginLeft: "10px" }}
+      >
+        Cancel
+      </button>
     </form>
   );
 };

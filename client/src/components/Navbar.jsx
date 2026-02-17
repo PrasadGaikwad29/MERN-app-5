@@ -28,13 +28,21 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            {/* Logged-in user display */}
             <span style={{ marginRight: "16px", fontWeight: "bold" }}>
               Welcome, {user.name || user.email}
             </span>
 
+            {/* My Blogs for BOTH user and admin */}
             <Link to="/userdashboard/myblogs">My Blogs</Link>
             <span style={{ margin: "0 8px" }}>|</span>
+
+            {/* Admin Dashboard only for admin */}
+            {user.role === "admin" && (
+              <>
+                <Link to="/admindashboard">Admin Dashboard</Link>
+                <span style={{ margin: "0 8px" }}>|</span>
+              </>
+            )}
 
             <Link to="/create">Create</Link>
             <span style={{ margin: "0 8px" }}>|</span>

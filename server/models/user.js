@@ -32,6 +32,18 @@ const userSchema = new mongoose.Schema(
       ref: "Blog",
       default: [],
     },
+    notifications: [
+      {
+        message: { type: String, required: true },
+        blogId: { type: mongoose.Schema.Types.ObjectId, ref: "Blog" },
+        type: {
+          type: String,
+          enum: ["status_changed", "blog_deleted", "comment_deleted"],
+          required: true,
+        },
+        isRead: { type: Boolean, default: false },
+      },
+    ],
   },
   { timestamps: true },
 );

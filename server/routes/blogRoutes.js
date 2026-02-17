@@ -9,6 +9,7 @@ import {
   deleteBlog,
   addComment,
   toggleLike,
+  deleteCommentByAdmin,
 } from "../controllers/blogController.js";
 
 import { auth, isAdmin, optionalAuth } from "../middlewares/auth.js";
@@ -53,5 +54,14 @@ router.post("/comment/:id", auth, addComment);
 
 // Admin dashboard → all blogs (all statuses)
 router.get("/admin/all", auth, isAdmin, getAllBlogsForAdmin);
+
+// Delete comment (Admin only)
+router.delete(
+  "/admin/delete-comment/:blogId/:commentId",
+  auth,
+  isAdmin,
+  deleteCommentByAdmin,
+);
+
 
 export default router;
