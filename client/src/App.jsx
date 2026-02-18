@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
-    <>
+    <div className="min-h-screen bg-gray-900 text-white">
       <Navbar />
       <Routes>
         <Route path="/" element={<Blogs />} />
@@ -23,7 +23,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/blogs/:id" element={<SingleBlog />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element= {<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route
           path="/create"
@@ -58,7 +58,7 @@ function App() {
           }
         />
       </Routes>
-    </>
+    </div>
   );
 }
 
