@@ -6,12 +6,15 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
   const { user } = useAuth();
   const [comments, setComments] = useState([]);
   const [content, setContent] = useState("");
+  const [showAllComments, setShowAllComments] = useState(true);
 
   useEffect(() => {
+    if (!blogId) return;
     fetchComments();
   }, [blogId]);
 
   const fetchComments = async () => {
+    if (!blogId) return;
     try {
       const res = await api.get(`/blogs/getblogbyid/${blogId}`);
       setComments(res.data.blog.comments || []);
@@ -20,7 +23,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
     }
   };
 
-  // Build nested tree
+  // Build nested comment tree
   const buildCommentTree = (comments) => {
     const map = {};
     const roots = [];
@@ -42,7 +45,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() || !blogId) return;
 
     try {
       await api.post(`/blogs/comment/${blogId}`, { text: content });
@@ -55,9 +58,6 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
 
   const commentTree = buildCommentTree(comments);
 
-  // =====================================
-  // 🔥 Recursive Comment Component
-  // =====================================
   const CommentItem = ({ comment, level = 0 }) => {
     const [replying, setReplying] = useState(false);
     const [replyText, setReplyText] = useState("");
@@ -67,7 +67,6 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
 
     const hasReplies = comment.replies.length > 0;
 
-    // Close admin dropdown on outside click
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -83,7 +82,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
 
     const handleReply = async (e) => {
       e.preventDefault();
-      if (!replyText.trim()) return;
+      if (!replyText.trim() || !blogId) return;
 
       try {
         await api.post(`/blogs/comment/${blogId}`, {
@@ -99,6 +98,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
     };
 
     const handleDelete = async () => {
+      if (!blogId) return;
       try {
         await api.delete(
           `/blogs/admin/delete-comment/${blogId}/${comment._id}`,
@@ -110,60 +110,26 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
     };
 
     return (
-      <div
-        style={{
-          marginLeft: level * 25,
-          marginTop: 16,
-          padding: 12,
-          borderLeft: level > 0 ? "2px solid #ddd" : "none",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <strong>
+      <div className="mt-4" style={{ marginLeft: level * 24 }}>
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-gray-200">
             {comment.user?.name} {comment.user?.surname}
-          </strong>
+          </span>
 
           {isAdmin && (
-            <div ref={menuRef} style={{ position: "relative" }}>
+            <div ref={menuRef} className="relative">
               <span
                 onClick={() => setMenuOpen(!menuOpen)}
-                style={{
-                  cursor: "pointer",
-                  padding: "0 6px",
-                  fontSize: 18,
-                }}
+                className="cursor-pointer px-2 text-gray-400 hover:text-white text-lg"
               >
                 ⋮
               </span>
 
               {menuOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: 22,
-                    background: "white",
-                    border: "1px solid #ddd",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                    borderRadius: 4,
-                    zIndex: 100,
-                  }}
-                >
+                <div className="absolute right-0 mt-2 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-50">
                   <div
                     onClick={handleDelete}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                      color: "red",
-                      whiteSpace: "nowrap",
-                    }}
+                    className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer whitespace-nowrap"
                   >
                     Delete
                   </div>
@@ -173,55 +139,41 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
           )}
         </div>
 
-        {/* Comment Text */}
-        <p style={{ marginTop: 6 }}>{comment.text}</p>
+        <p className="mt-2 text-gray-300 text-sm leading-relaxed">
+          {comment.text}
+        </p>
 
-        {/* Reply Button */}
         {user && (
           <button
             onClick={() => setReplying(!replying)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#007bff",
-              cursor: "pointer",
-              padding: 0,
-              fontSize: 14,
-            }}
+            className="mt-2 text-sm text-blue-400 hover:underline"
           >
             Reply
           </button>
         )}
 
-        {/* Reply Form */}
         {replying && (
-          <form onSubmit={handleReply} style={{ marginTop: 10 }}>
+          <form onSubmit={handleReply} className="mt-3">
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               required
-              style={{ width: "100%", minHeight: "60px" }}
+              className="w-full min-h-[70px] bg-gray-800 border border-gray-700 rounded-md p-3 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button type="submit" style={{ marginTop: 6 }}>
+            <button
+              type="submit"
+              className="mt-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 rounded-md text-white transition"
+            >
               Submit Reply
             </button>
           </form>
         )}
 
-        {/* 🔥 View Replies Toggle */}
         {hasReplies && (
-          <div style={{ marginTop: 6 }}>
+          <div className="mt-2">
             <button
               onClick={() => setShowReplies(!showReplies)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#6c757d",
-                cursor: "pointer",
-                padding: 0,
-                fontSize: 14,
-                fontWeight: 500,
-              }}
+              className="text-sm text-gray-400 hover:text-gray-200"
             >
               {showReplies
                 ? "Hide replies"
@@ -230,9 +182,8 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
           </div>
         )}
 
-        {/* Nested Replies */}
         {hasReplies && showReplies && (
-          <div style={{ marginTop: 10 }}>
+          <div className="mt-3">
             {comment.replies.map((reply) => (
               <CommentItem key={reply._id} comment={reply} level={level + 1} />
             ))}
@@ -243,29 +194,52 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
   };
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <h4>Comments</h4>
+    <div className="mt-10">
+      <h4 className="text-lg font-semibold text-white mb-4">Comments</h4>
 
       {user && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: 20 }}>
+        <form onSubmit={handleSubmit} className="mb-4">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
             placeholder="Write a comment..."
-            style={{ width: "100%", minHeight: "80px" }}
+            className="w-full min-h-[90px] bg-gray-800 border border-gray-700 rounded-md p-3 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button type="submit" style={{ marginTop: 8 }}>
+          <button
+            type="submit"
+            className="mt-3 px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white text-sm transition"
+          >
             Post Comment
           </button>
         </form>
       )}
 
-      {commentTree.length === 0 && <p>No comments yet.</p>}
+      {/* 🔥 Show / Hide All Comments Button */}
+      {commentTree.length > 0 && (
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAllComments(!showAllComments)}
+            className="text-sm text-gray-400 hover:text-gray-200"
+          >
+            {showAllComments
+              ? "Hide all comments"
+              : `Show all comments (${commentTree.length})`}
+          </button>
+        </div>
+      )}
 
-      {commentTree.map((comment) => (
-        <CommentItem key={comment._id} comment={comment} />
-      ))}
+      {showAllComments && (
+        <>
+          {commentTree.length === 0 && (
+            <p className="text-gray-400 text-sm">No comments yet.</p>
+          )}
+
+          {commentTree.map((comment) => (
+            <CommentItem key={comment._id} comment={comment} />
+          ))}
+        </>
+      )}
     </div>
   );
 };

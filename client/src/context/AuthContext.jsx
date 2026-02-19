@@ -24,10 +24,15 @@ const logout = () => {
   setToken(null);
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-};
+  };
+  const editProfile = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, editProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,7 +13,6 @@ const BlogCard = ({ blog, showActions = true }) => {
 
   const isLiked = blog.likes?.includes(user?._id);
 
-  // ✅ Format created date safely
   const formattedDate = blog.createdAt
     ? new Date(blog.createdAt).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -22,95 +21,91 @@ const BlogCard = ({ blog, showActions = true }) => {
       })
     : "Unknown date";
 
-  // ✅ Status color logic
   const statusColor =
     blog.status === "publish"
-      ? "green"
+      ? "text-emerald-400"
       : blog.status === "review"
-        ? "orange"
-        : "gray";
+        ? "text-amber-400"
+        : "text-gray-400";
 
-  return (
-    <div
-      style={{
-        borderBottom: "1px solid #ddd",
-        marginBottom: 16,
-        paddingBottom: 12,
-      }}
-    >
+return (
+  <div className="w-full">
+    <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-lg p-6 transition hover:shadow-xl hover:border-gray-600">
       {/* Title */}
       <h2
-        style={{ cursor: "pointer" }}
         onClick={() => navigate(`/blogs/${blog._id}`)}
+        className="text-2xl font-semibold text-white cursor-pointer hover:text-blue-400 transition"
       >
         {blog.title}
       </h2>
 
       {/* Author */}
-      <p style={{ fontSize: "14px", color: "#555" }}>
-        By {blog.author?.name} {blog.author?.surname}
+      <p className="text-sm text-gray-400 mt-2">
+        By{" "}
+        <span className="text-gray-200 font-medium">
+          {blog.author?.name} {blog.author?.surname}
+        </span>
       </p>
 
-      {/* Created Date */}
-      <p style={{ fontSize: "13px", color: "#777" }}>📅 {formattedDate}</p>
+      {/* Date */}
+      <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
 
-      {/* Status (Show only in dashboard view) */}
+      {/* Status */}
       {showActions && (
-        <p
-          style={{
-            fontSize: "13px",
-            fontWeight: "bold",
-            color: statusColor,
-            marginBottom: 8,
-          }}
-        >
+        <p className={`text-xs font-semibold mt-2 ${statusColor}`}>
           Status: {blog.status}
         </p>
       )}
 
-      {/* Content / Preview */}
-      {!showActions ? (
-        <p>
-          {blog.content.slice(0, 150)}...
-          <span
-            style={{
-              color: "blue",
-              cursor: "pointer",
-              marginLeft: 8,
-            }}
-            onClick={() => navigate(`/blogs/${blog._id}`)}
-          >
-            Read More
-          </span>
-        </p>
-      ) : (
-        <p>{blog.content}</p>
-      )}
+      {/* Content */}
+      <div className="mt-4 text-gray-300 leading-relaxed text-sm">
+        {!showActions ? (
+          <>
+            {blog.content.slice(0, 350)}...
+            <span
+              onClick={() => navigate(`/blogs/${blog._id}`)}
+              className="ml-2 text-blue-400 cursor-pointer hover:underline"
+            >
+              Read More
+            </span>
+          </>
+        ) : (
+          blog.content
+        )}
+      </div>
 
       {/* Like Button */}
       {user && (
-        <p
-          style={{ cursor: "pointer", marginTop: 8 }}
+        <div
           onClick={() => toggleLike(blog._id)}
+          className="mt-5 text-sm text-gray-400 cursor-pointer hover:text-pink-400 transition"
         >
-          {isLiked ? "Unlike ❤️" : "❤️ Like"} ({blog.likes?.length || 0})
-        </p>
+          {isLiked ? "❤️ Unlike" : "🤍 Like"}{" "}
+          <span className="text-gray-500">({blog.likes?.length || 0})</span>
+        </div>
       )}
 
-      {/* Edit/Delete Buttons */}
+      {/* Actions */}
       {showActions && canModify && (
-        <div style={{ marginTop: 10 }}>
+        <div className="mt-6 flex gap-4">
           <button
             onClick={() => navigate(`/edit/${blog._id}`)}
-            style={{ marginRight: 8 }}
+            className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
           >
             Edit
           </button>
-          <button onClick={() => removeBlog(blog._id)}>Delete</button>
+
+          <button
+            onClick={() => removeBlog(blog._id)}
+            className="px-4 py-2 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white transition"
+          >
+            Delete
+          </button>
         </div>
       )}
     </div>
-  );
+  </div>
+);
 };
 
 export default BlogCard;

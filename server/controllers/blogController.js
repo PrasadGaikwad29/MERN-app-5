@@ -99,6 +99,7 @@ export const getBlogById = async (req, res) => {
       .populate("author", "name surname role")
       .populate("comments.user", "name surname");
 
+    // ✅ ADD THIS CHECK
     if (!blog) {
       return res.status(404).json({
         success: false,
@@ -106,26 +107,24 @@ export const getBlogById = async (req, res) => {
       });
     }
 
-    // ✅ FIX 3: allow guest access ONLY for publish blogs
     if (
       blog.status !== "publish" &&
       (!req.user ||
-        (blog.author._id.toString() !== req.user.id &&
-          req.user.role !== "admin"))
+        (blog.author?._id?.toString() !== req.user?.id &&
+          req.user?.role !== "admin"))
     ) {
       return res.status(403).json({
         success: false,
-        message: "Not authorized to view this blog",
+        message: "Not authorized",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Blog found",
       blog,
     });
   } catch (error) {
-    console.error(error); // ✅ FIX 2
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

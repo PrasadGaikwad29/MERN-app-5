@@ -28,24 +28,48 @@ const ForgotPassword = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Forgot Password</h2>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-6">
+      <div className="w-full max-w-md bg-gray-800 rounded-2xl shadow-lg border border-gray-700 p-8">
+        <h2 className="text-2xl font-bold text-white mb-6 text-center">
+          Forgot Password
+        </h2>
 
-      <input
-        type="email"
-        placeholder="Enter your email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">
+              Email Address
+            </label>
 
-      <button disabled={loading}>
-        {loading ? "Sending..." : "Send Reset Link"}
-      </button>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-600 cursor-not-allowed text-gray-300"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+
+          {message && (
+            <p className="text-green-400 text-sm text-center">{message}</p>
+          )}
+
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        </form>
+      </div>
+    </div>
   );
 };
 

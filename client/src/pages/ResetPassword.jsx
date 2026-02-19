@@ -37,24 +37,48 @@ const ResetPassword = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Reset Password</h2>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-6">
+      <div className="w-full max-w-md bg-gray-800 border border-gray-700 rounded-2xl shadow-lg p-8">
+        <h2 className="text-2xl font-bold text-white mb-6 text-center">
+          Reset Password
+        </h2>
 
-      <input
-        type="password"
-        placeholder="New password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">
+              New Password
+            </label>
 
-      <button disabled={loading}>
-        {loading ? "Resetting..." : "Reset Password"}
-      </button>
+            <input
+              type="password"
+              placeholder="Enter new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 rounded-lg font-semibold transition ${
+              loading
+                ? "bg-gray-600 cursor-not-allowed text-gray-300"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {loading ? "Resetting..." : "Reset Password"}
+          </button>
+
+          {message && (
+            <p className="text-green-400 text-sm text-center">{message}</p>
+          )}
+
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        </form>
+      </div>
+    </div>
   );
 };
 
