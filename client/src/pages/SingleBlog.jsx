@@ -76,8 +76,10 @@ const SingleBlog = () => {
           <p className="text-gray-400 mb-4">
             By {blog.author?.name} {blog.author?.surname}
           </p>
-
-          <div className="flex items-center gap-4 mb-4">
+          <div className="text-gray-300 leading-relaxed whitespace-pre-line mt-2">
+            {blog.content}
+          </div>
+          <div className="flex items-center gap-4  mt-4 mb-2">
             {user && (
               <button
                 onClick={handleLike}
@@ -90,10 +92,6 @@ const SingleBlog = () => {
                 {isLiked ? "❤️ Unlike" : "🤍 Like"} ({blog.likes?.length || 0})
               </button>
             )}
-          </div>
-
-          <div className="text-gray-300 leading-relaxed whitespace-pre-line mt-2">
-            {blog.content}
           </div>
 
           <div className="mt-6">
