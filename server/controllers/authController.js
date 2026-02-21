@@ -72,9 +72,6 @@ export const login = async (req, res) => {
       });
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-    console.log("Password match result:", isPasswordMatch);
-
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
@@ -216,42 +213,3 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
-export const editProfile = async (req, res) => {
-  try {
-    const { name, surname } = req.body;
-
-    // req.user.id must come from auth middleware
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    // Update allowed fields only
-    if (name !== undefined) user.name = name;
-    if (surname !== undefined) user.surname = surname;
-
-    await user.save();
-
-    // Remove password before sending
-    const userResponse = {
-      _id: user._id,
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-      role: user.role,
-    };
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      user: userResponse,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error while updating profile",
-    });
-  }
-};
-

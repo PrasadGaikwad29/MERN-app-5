@@ -11,10 +11,13 @@ const SingleBlog = () => {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
+        setLoading(true); // important
+
         const res = await api.get(`/blogs/getblogbyid/${id}`);
         setBlog(res.data.blog);
       } catch (error) {
         console.error(error.response?.data || error.message);
+        setBlog(null);
       } finally {
         setLoading(false);
       }
@@ -42,23 +45,22 @@ const SingleBlog = () => {
   return (
     <div className="min-h-screen bg-gray-900 px-6 py-10 text-gray-100">
       <div className="max-w-4xl mx-auto">
-        {/* Blog Card */}
         <div className="bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-700">
-          {/* Title */}
           <h1 className="text-4xl font-bold mb-4">{blog.title}</h1>
 
-          {/* Author */}
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-400 mb-4">
             By {blog.author?.name} {blog.author?.surname}
           </p>
-
-          {/* Content */}
-          <div className="text-gray-300 leading-relaxed whitespace-pre-line">
+          <p className="mt-1 text-sm text-gray-400">
+            <span className="text-gray-200">
+              Likes ({blog.likes?.length || 0})
+            </span>
+          </p>
+          <div className="text-gray-300 leading-relaxed whitespace-pre-line mt-2">
             {blog.content}
           </div>
 
-          {/* Comments */}
-          <div className="mt-10 border-t border-gray-700 pt-6">
+          <div>
             <CommentSection blogId={blog._id} />
           </div>
         </div>

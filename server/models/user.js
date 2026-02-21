@@ -1,5 +1,19 @@
 import mongoose from "mongoose";
 
+const notificationSchema = new mongoose.Schema(
+  {
+    message: { type: String, required: true },
+    blogId: { type: mongoose.Schema.Types.ObjectId, ref: "Blog" },
+    type: {
+      type: String,
+      enum: ["status_changed", "blog_deleted", "comment_deleted"],
+      required: true,
+    },
+    isRead: { type: Boolean, default: false },
+  },
+  { timestamps: true }, // ✅ adds createdAt per notification
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -27,32 +41,17 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
-
-    // ✅ ADD THESE
-    resetPasswordToken: {
-      type: String,
-    },
-    resetPasswordExpires: {
-      type: Date,
-    },
-
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     blogs: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Blog",
       default: [],
     },
-    notifications: [
-      {
-        message: { type: String, required: true },
-        blogId: { type: mongoose.Schema.Types.ObjectId, ref: "Blog" },
-        type: {
-          type: String,
-          enum: ["status_changed", "blog_deleted", "comment_deleted"],
-          required: true,
-        },
-        isRead: { type: Boolean, default: false },
-      },
-    ],
+    notifications: {
+      type: [notificationSchema],
+      default: [],
+    },
   },
   { timestamps: true },
 );

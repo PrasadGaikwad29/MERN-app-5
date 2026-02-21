@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 export default function EditProfile() {
-  const { user, token, editProfile } = useAuth(); // make sure this matches context
+  const { user, editProfile } = useAuth();
 
-  const [name, setName] = useState(user?.name || "");
-  const [surname, setSurname] = useState(user?.surname || "");
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+
+  // ✅ Sync form with user context
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setSurname(user.surname || "");
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,18 +25,16 @@ export default function EditProfile() {
     try {
       setLoading(true);
       setError(null);
+      setMessage(null);
 
-      const res = await api.put(
-        "/auth/edit-profile",
-        { name, surname },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const res = await api.put("/users/edit-profile", {
+        name,
+        surname,
+      });
 
+      // Update global context
       editProfile(res.data.user);
+
       setMessage("Profile updated successfully");
     } catch (err) {
       setError(err.response?.data?.message || "Update failed");
@@ -45,7 +51,6 @@ export default function EditProfile() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email (Readonly) */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">Email</label>
             <input
@@ -56,7 +61,6 @@ export default function EditProfile() {
             />
           </div>
 
-          {/* First Name */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">
               First Name
@@ -69,7 +73,6 @@ export default function EditProfile() {
             />
           </div>
 
-          {/* Surname */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">Surname</label>
             <input

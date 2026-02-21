@@ -28,7 +28,7 @@ function App() {
           <Route path="/blogs/:id" element={<SingleBlog />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
+          {/* <Route path="/edit-profile" element={<EditProfile />} /> */}
 
           <Route
             path="/login"

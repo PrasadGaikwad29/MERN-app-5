@@ -158,7 +158,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               required
-              className="w-full min-h-[70px] bg-gray-800 border border-gray-700 rounded-md p-3 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-17.5 bg-gray-800 border border-gray-700 rounded-md p-3 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="submit"
@@ -204,7 +204,7 @@ const CommentSection = ({ blogId, isAdmin = false }) => {
             onChange={(e) => setContent(e.target.value)}
             required
             placeholder="Write a comment..."
-            className="w-full min-h-[90px] bg-gray-800 border border-gray-700 rounded-md p-3 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full min-h-22.5 bg-gray-800 border border-gray-700 rounded-md p-3 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"

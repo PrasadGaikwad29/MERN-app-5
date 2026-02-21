@@ -1,15 +1,16 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import Notification from "./Notification";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, notifications, markNotificationAsRead } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
     <nav className="bg-gray-900 text-white shadow-md">
       <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Left Section */}
+        {/* LEFT */}
         <div className="flex items-center gap-6">
           <Link
             to="/"
@@ -17,14 +18,21 @@ export default function Navbar() {
           >
             Home
           </Link>
+          
+          {/* ✅ NEW CREATE BLOG BUTTON */}
+          <Link to="/create" className="hover:text-purple-400 transition">
+            + Create new Blog
+          </Link>
 
           {user && (
-            <Link
-              to="/userdashboard/myblogs"
-              className="hover:text-blue-400 transition"
-            >
-              MyBlog
-            </Link>
+            <>
+              <Link
+                to="/userdashboard/myblogs"
+                className="hover:text-blue-400 transition"
+              >
+                MyBlog
+              </Link>
+            </>
           )}
 
           {user?.role === "admin" && (
@@ -37,8 +45,8 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4 relative">
+        {/* RIGHT */}
+        <div className="flex items-center gap-6 relative">
           {!user && (
             <>
               <Link
@@ -58,52 +66,57 @@ export default function Navbar() {
           )}
 
           {user && (
-            <div className="relative">
-              <button
-                onClick={() => setOpen(!open)}
-                className="flex items-center gap-2 hover:text-purple-400 transition"
-              >
-                <span className="font-medium">{user.name}</span>
+            <>
+              <Notification
+                notifications={notifications}
+                markNotificationAsRead={markNotificationAsRead}
+              />
 
-                {/* Arrow */}
-                <svg
-                  className={`w-4 h-4 transition-transform ${
-                    open ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
+              {/* USER DROPDOWN */}
+              <div className="relative">
+                <button
+                  onClick={() => setOpen((prev) => !prev)}
+                  className="flex items-center gap-2 hover:text-purple-400 transition"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
+                  <span className="font-medium">{user.name}</span>
 
-              {open && (
-                <div className="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
-                  <Link
-                    to="/edit-profile"
-                    onClick={() => setOpen(false)}
-                    className="block px-4 py-2 hover:bg-gray-700 transition"
+                  <svg
+                    className={`w-4 h-4 transition-transform ${
+                      open ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
                   >
-                    Edit Profile
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
 
-          {user && (
-            <button
-              onClick={logout}
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm transition"
-            >
-              Logout
-            </button>
+                {open && (
+                  <div className="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
+                    <Link
+                      to="/edit-profile"
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-2 hover:bg-gray-700 transition"
+                    >
+                      Edit Profile
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm transition"
+              >
+                Logout
+              </button>
+            </>
           )}
         </div>
       </div>

@@ -72,7 +72,7 @@ return (
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            className="w-full min-h-[180px] bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full min-h-45 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

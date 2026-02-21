@@ -62,6 +62,4 @@ router.delete(
   isAdmin,
   deleteCommentByAdmin,
 );
-
-
 export default router;

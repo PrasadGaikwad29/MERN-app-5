@@ -1,19 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../services/api";
 import CommentSection from "../components/CommentSection";
+import SearchBar from "../components/SearchBar";
 
 const BLOGS_PER_PAGE = 10;
 
 const AdminDashboard = () => {
   const [blogs, setBlogs] = useState([]);
+  const [filteredBlogs, setFilteredBlogs] = useState([]);
   const [updatingId, setUpdatingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  /* -------- Format Date -------- */
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  /* -------- Fetch All Blogs Once -------- */
   const fetchAllBlogs = async () => {
     try {
       const res = await api.get("/blogs/admin/all");
-      setBlogs(res.data.blogs || []);
+      const data = res.data.blogs || [];
+
+      // Sort newest first
+      const sorted = data.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
+
+      setBlogs(sorted);
+      setFilteredBlogs(sorted);
     } catch (error) {
       console.error("Failed to fetch blogs", error);
     }
@@ -23,6 +48,44 @@ const AdminDashboard = () => {
     fetchAllBlogs();
   }, []);
 
+  /* -------- Client-side Filtering -------- */
+  const handleSearch = useCallback(
+    (filters) => {
+      let result = [...blogs];
+
+      if (filters.title?.trim()) {
+        result = result.filter((blog) =>
+          blog.title.toLowerCase().includes(filters.title.toLowerCase()),
+        );
+      }
+
+      if (filters.author?.trim()) {
+        result = result.filter((blog) =>
+          `${blog.author?.name || ""} ${blog.author?.surname || ""}`
+            .toLowerCase()
+            .includes(filters.author.toLowerCase()),
+        );
+      }
+
+      if (filters.date) {
+        result = result.filter(
+          (blog) => blog.createdAt?.slice(0, 10) === filters.date,
+        );
+      }
+
+      if (filters.status?.trim()) {
+        result = result.filter(
+          (blog) => blog.status?.toLowerCase() === filters.status.toLowerCase(),
+        );
+      }
+
+      setFilteredBlogs(result);
+      setCurrentPage(1);
+    },
+    [blogs],
+  );
+
+  /* -------- Update Status -------- */
   const updateStatus = async (id, newStatus) => {
     try {
       setUpdatingId(id);
@@ -31,8 +94,14 @@ const AdminDashboard = () => {
         status: newStatus,
       });
 
-      setBlogs((prevBlogs) =>
-        prevBlogs.map((blog) =>
+      setBlogs((prev) =>
+        prev.map((blog) =>
+          blog._id === id ? { ...blog, status: newStatus } : blog,
+        ),
+      );
+
+      setFilteredBlogs((prev) =>
+        prev.map((blog) =>
           blog._id === id ? { ...blog, status: newStatus } : blog,
         ),
       );
@@ -43,13 +112,15 @@ const AdminDashboard = () => {
     }
   };
 
+  /* -------- Delete Blog -------- */
   const deleteBlog = async (id) => {
     try {
       setDeletingId(id);
 
       await api.delete(`/blogs/deleteblog/${id}`);
 
-      setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== id));
+      setBlogs((prev) => prev.filter((blog) => blog._id !== id));
+      setFilteredBlogs((prev) => prev.filter((blog) => blog._id !== id));
     } catch (error) {
       console.error("Failed to delete blog", error);
     } finally {
@@ -57,11 +128,13 @@ const AdminDashboard = () => {
     }
   };
 
-  /* ---------------- Pagination Logic ---------------- */
-
-  const totalPages = Math.ceil(blogs.length / BLOGS_PER_PAGE);
+  /* -------- Pagination -------- */
+  const totalPages = Math.ceil(filteredBlogs.length / BLOGS_PER_PAGE);
   const startIndex = (currentPage - 1) * BLOGS_PER_PAGE;
-  const currentBlogs = blogs.slice(startIndex, startIndex + BLOGS_PER_PAGE);
+  const currentBlogs = filteredBlogs.slice(
+    startIndex,
+    startIndex + BLOGS_PER_PAGE,
+  );
 
   const goToPage = (page) => {
     if (page < 1 || page > totalPages) return;
@@ -69,120 +142,92 @@ const AdminDashboard = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* -------------------------------------------------- */
-
   return (
     <div className="min-h-screen bg-gray-900 px-6 py-10 text-gray-100">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-white">Admin Dashboard</h2>
+        <h2 className="text-3xl font-bold text-white mb-6">Admin Dashboard</h2>
 
-          {/* Pagination (Top Right) */}
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
+        <SearchBar onSearch={handleSearch} showStatus={true} />
+
+        {totalPages > 1 && (
+          <div className="flex gap-2 justify-end mb-6">
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 bg-gray-800 rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => (
               <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 text-sm rounded-lg transition ${
-                  currentPage === 1
-                    ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-200"
+                key={i}
+                onClick={() => goToPage(i + 1)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === i + 1 ? "bg-blue-600" : "bg-gray-800"
                 }`}
               >
-                Prev
+                {i + 1}
               </button>
+            ))}
 
-              {Array.from({ length: totalPages }, (_, index) => {
-                const page = index + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    className={`px-3 py-1 text-sm rounded-lg transition ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-800 hover:bg-gray-700 text-gray-200"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 bg-gray-800 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
 
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 text-sm rounded-lg transition ${
-                  currentPage === totalPages
-                    ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-200"
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Blog List */}
         <div className="space-y-8">
           {currentBlogs.map((blog) => (
             <div
               key={blog._id}
-              className="bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-700"
+              className="bg-gray-800 rounded-2xl p-6 border border-gray-700"
             >
-              <h3 className="text-xl font-semibold mb-3 text-white">
-                {blog.title}
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">{blog.title}</h3>
+
+              {/* Author + Created Date */}
+              <div className="flex justify-between text-sm text-gray-400 mb-4">
+                <span>
+                  Author:{" "}
+                  <span className="text-gray-200 font-medium">
+                    {blog.author?.name} {blog.author?.surname}
+                  </span>
+                </span>
+
+                <span>{formatDate(blog.createdAt)}</span>
+              </div>
 
               <p className="text-gray-300 mb-4 line-clamp-3">{blog.content}</p>
 
-              <p className="text-sm text-gray-400">
-                Author:{" "}
-                <span className="font-medium text-gray-200">
-                  {blog.author?.name}
-                </span>
-              </p>
-
-              {/* Status */}
               <div className="mt-5 flex items-center gap-4">
-                <label className="text-sm font-medium text-gray-400">
-                  Status:
-                </label>
+                <label>Status:</label>
 
                 <select
                   value={blog.status}
                   onChange={(e) => updateStatus(blog._id, e.target.value)}
                   disabled={updatingId === blog._id}
-                  className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-700 px-3 py-2 rounded"
                 >
                   <option value="draft">Draft</option>
                   <option value="review">Review</option>
                   <option value="publish">Publish</option>
                 </select>
-
-                {updatingId === blog._id && (
-                  <span className="text-sm text-blue-400">Updating...</span>
-                )}
               </div>
 
-              {/* Delete */}
               <button
                 onClick={() => deleteBlog(blog._id)}
                 disabled={deletingId === blog._id}
-                className={`mt-5 px-4 py-2 rounded-md text-sm font-medium transition ${
-                  deletingId === blog._id
-                    ? "bg-red-400 cursor-not-allowed text-black"
-                    : "bg-red-600 hover:bg-red-700 text-white"
-                }`}
+                className="mt-5 bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
               >
                 {deletingId === blog._id ? "Deleting..." : "Delete Blog"}
               </button>
 
-              {/* Comments */}
-              <div className="mt-6 border-t border-gray-700 pt-5">
-                <CommentSection blogId={blog._id} isAdmin={true} />
+              <div className="mt-6">
+                <CommentSection blogId={blog._id} isAdmin />
               </div>
             </div>
           ))}
