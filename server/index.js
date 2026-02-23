@@ -15,10 +15,11 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: ["http://localhost:5174", "https://blog-app-phi-sandy.vercel.app"],
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 app.use("/api/v1/auth", authRoutes);
